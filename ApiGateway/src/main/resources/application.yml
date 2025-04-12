@@ -27,8 +27,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${AUTH0_ISSUER}
-          audience: ${AUTH0_AUDIENCE}
+          issuer-uri: ${AUTH0_ISSUER:https://thuatphan1809.us.auth0.com/}
+          audience: ${AUTH0_AUDIENCE:http://localhost:8080/}
 
 eureka:
   client:

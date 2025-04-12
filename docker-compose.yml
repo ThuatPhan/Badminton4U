@@ -103,6 +103,36 @@ services:
       timeout: 10s
       retries: 5
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.3
+    container_name: badminton4u-elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - backend
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.3
+    container_name: badminton4u-logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - backend
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.3
+    container_name: badminton4u-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    networks:
+      - backend
+
   product-service:
     image: product-service
     container_name: badminton4u-product-service
@@ -118,6 +148,9 @@ services:
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
       - CLOUDINARY_FOLDER_NAME=${CLOUDINARY_FOLDER_NAME}
       - EUREKA_URL=${EUREKA_URL}
+      - LOGSTASH_URL=${LOGSTASH_URL}
+      - SERVICE_NAME=product-service
+      - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       product-db:
         condition: service_healthy
@@ -125,6 +158,12 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      logstash:
+        condition: service_started
+      kibana:
+        condition: service_started
     networks:
       - backend
     healthcheck:
@@ -145,6 +184,9 @@ services:
       - REDIS_PORT=${REDIS_PORT}
       - AUTH0_ISSUER=${AUTH0_ISSUER}
       - EUREKA_URL=${EUREKA_URL}
+      - LOGSTASH_URL=${LOGSTASH_URL}
+      - SERVICE_NAME=cart-service
+      - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       cart-db:
         condition: service_healthy
@@ -152,10 +194,16 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      logstash:
+        condition: service_started
+      kibana:
+        condition: service_started
     networks:
       - backend
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -176,6 +224,9 @@ services:
       - RABBIT_PASSWORD=${RABBIT_PASSWORD}
       - AUTH0_ISSUER=${AUTH0_ISSUER}
       - EUREKA_URL=${EUREKA_URL}
+      - LOGSTASH_URL=${LOGSTASH_URL}
+      - SERVICE_NAME=order-service
+      - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       order-db:
         condition: service_healthy
@@ -185,6 +236,12 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      logstash:
+        condition: service_started
+      kibana:
+        condition: service_started
     networks:
       - backend
     healthcheck:
@@ -209,11 +266,20 @@ services:
       - STRIPE_CURRENCY=${STRIPE_CURRENCY}
       - AUTH0_ISSUER=${AUTH0_ISSUER}
       - EUREKA_URL=${EUREKA_URL}
+      - LOGSTASH_URL=${LOGSTASH_URL}
+      - SERVICE_NAME=payment-service
+      - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       rabbitmq:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      logstash:
+        condition: service_started
+      kibana:
+        condition: service_started
     networks:
       - backend
     healthcheck:
@@ -238,11 +304,20 @@ services:
       - SENDER_EMAIL=${SENDER_EMAIL}
       - SENDER_NAME=${SENDER_NAME}
       - EUREKA_URL=${EUREKA_URL}
+      - LOGSTASH_URL=${LOGSTASH_URL}
+      - SERVICE_NAME=notification-service
+      - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       rabbitmq:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      logstash:
+        condition: service_started
+      kibana:
+        condition: service_started
     networks:
       - backend
     healthcheck:
