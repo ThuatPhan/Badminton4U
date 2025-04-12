@@ -1,0 +1,66 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: API-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: ${PRODUCT_SERVICE_URL:lb://PRODUCT-SERVICE}
+          predicates:
+            - Path=/api/categories/**, /api/products/**, /v3/api-docs/product-service
+        - id: cart-service
+          uri: ${CART_SERVICE_URL:lb://CART-SERVICE}
+          predicates:
+            - Path=/api/cart/**, /v3/api-docs/cart-service
+        - id: order-service
+          uri: ${ORDER_SERVICE_URL:lb://ORDER-SERVICE}
+          predicates:
+            - Path=/api/order/**, /v3/api-docs/order-service
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:lb://PAYMENT-SERVICE}
+          predicates:
+            - Path=/api/payment/**, /v3/api-docs/payment-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER}
+          audience: ${AUTH0_AUDIENCE}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    urls:
+      - url: /v3/api-docs
+        name: API Gateway
+      - url: /v3/api-docs/product-service
+        name: Product Service
+      - url: /v3/api-docs/cart-service
+        name: Cart Service
+      - url: /v3/api-docs/order-service
+        name: Order Service
+      - url: /v3/api-docs/payment-service
+        name: Payment Service
+    urls-primary-name: Product Service
