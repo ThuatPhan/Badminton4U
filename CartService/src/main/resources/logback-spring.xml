@@ -1,0 +1,12 @@
+<configuration>
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${LOGSTASH_URL}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"service_name":"${SERVICE_NAME}", "environment":"${ENVIRONMENT}"}</customFields>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="LOGSTASH"/>
+    </root>
+</configuration>
