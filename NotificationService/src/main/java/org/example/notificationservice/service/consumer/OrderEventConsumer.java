@@ -19,7 +19,7 @@ public class OrderEventConsumer {
     EmailService emailService;
     ObjectMapper objectMapper;
 
-    @RabbitListener(queues = "${rabbitmq.queues.email}")
+    @RabbitListener(queues = "${rabbitmq.queues.email}", containerFactory = "rabbitListenerContainerFactory")
     public void sendEmail(String request) {
         try {
             SendMailEvent event = objectMapper.readValue(request, SendMailEvent.class);

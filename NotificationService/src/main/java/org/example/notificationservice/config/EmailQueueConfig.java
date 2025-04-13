@@ -3,37 +3,41 @@ package org.example.notificationservice.config;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmailQueueConfig {
-    @NonFinal
     @Value("${rabbitmq.queues.email}")
-    String queue;
+    String emailQueue;
 
-    @NonFinal
     @Value("${rabbitmq.routing-keys.email}")
-    String routingKey;
+    String emailRoutingKey;
 
-    TopicExchange exchange;
+    @Value("${rabbitmq.routing-keys.dlx-email}")
+    String deadLetterRoutingKey;
 
+    @Value("${rabbitmq.exchanges.dlx-exchange}")
+    String deadLetterExchangeName;
+
+    final TopicExchange orderExchange;
 
     @Bean
     public Queue emailQueue() {
-        return new Queue(queue, true);
+        return QueueBuilder.durable(emailQueue)
+                .withArgument("x-dead-letter-exchange", deadLetterExchangeName)
+                .withArgument("x-dead-letter-routing-key", deadLetterRoutingKey)
+                .build();
     }
 
     @Bean
     public Binding emailBinding(Queue emailQueue) {
-        return BindingBuilder.bind(emailQueue).to(exchange).with(routingKey);
+        return BindingBuilder.bind(emailQueue)
+                .to(orderExchange)
+                .with(emailRoutingKey);
     }
 }

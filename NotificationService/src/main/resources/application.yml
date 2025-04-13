@@ -16,11 +16,15 @@ spring:
     password: ${RABBIT_PASSWORD:guest}
 
 rabbitmq:
-  exchange: order.exchange
+  exchanges:
+    order: order.exchange
+    dlx-exchange: dlx.exchange
   routing-keys:
     email: order.email.send
+    dlx-email: dlx.email
   queues:
     email: email.queue
+    dlx-email: dlx.email.queue
 
 emails:
   sender_email: ${SENDER_EMAIL}

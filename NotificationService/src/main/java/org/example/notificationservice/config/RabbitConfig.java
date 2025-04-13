@@ -10,11 +10,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RabbitConfig {
-    @Value("${rabbitmq.exchange}")
-    String exchange;
+    @Value("${rabbitmq.exchanges.order}")
+    String orderExchange;
 
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(exchange, true, false);
+    @Value("${rabbitmq.exchanges.dlx-exchange}")
+    String deadLetterExchange;
+
+    @Bean(name = "orderExchange")
+    public TopicExchange orderExchange() {
+        return new TopicExchange(orderExchange, true, false);
+    }
+
+    @Bean(name = "deadLetterExchange")
+    public TopicExchange deadLetterExchange() {
+        return new TopicExchange(deadLetterExchange, true, false);
     }
 }
